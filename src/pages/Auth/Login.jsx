@@ -335,7 +335,7 @@ function Login() {
                 {logoError
                   ? <LogoFallback />
                   : <img
-                      src="/assets/img/family-balance-logo.png"
+                      src="/assets/img/app-logo.jpeg"
                       alt="Family Balance Logo"
                       onError={() => setLogoError(true)}
                     />

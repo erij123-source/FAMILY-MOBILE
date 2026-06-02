@@ -703,8 +703,8 @@ export default function StatsBudget() {
 
             {/* Logo */}
             <a className="navbar-brand" href="/">
-              <img data-bs-img="light" src="assets/img/family-balance-logo.png" alt="" />
-              <img data-bs-img="dark"  src="assets/img/family-balance-logo.png" alt="" />
+              <img data-bs-img="light" src="assets/img/app-logo.jpeg" alt="" />
+              <img data-bs-img="dark"  src="assets/img/app-logo.jpeg" alt="" />
               <div className="lh-20 d-block ms-2">
                 <span className="h4">FamilyBalance</span>
                 <p className="company-tagline">Gestion budgétaire familiale</p>

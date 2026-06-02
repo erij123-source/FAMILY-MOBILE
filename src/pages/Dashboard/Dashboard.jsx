@@ -1588,7 +1588,7 @@ export default function Dashboard() {
         }
         .icon-svg {
           width: 20px; height: 20px;
-          stroke: rgba(255,255,255,0.70);
+          stroke: #4b5563;
           stroke-width: 2;
           stroke-linecap: round;
           stroke-linejoin: round;
@@ -1884,8 +1884,8 @@ export default function Dashboard() {
             </button>
 
             <a className="navbar-brand" href="/">
-              <img data-bs-img="light" src="assets/img/family-balance-logo.png" alt="" />
-              <img data-bs-img="dark"  src="assets/img/family-balance-logo.png" alt="" />
+              <img data-bs-img="light" src="assets/img/app-logo.jpeg" alt="" />
+              <img data-bs-img="dark"  src="assets/img/app-logo.jpeg" alt="" />
               <div className="lh-20 d-block ms-2">
                 <span className="h4">FamilyBalance</span>
                 <p className="company-tagline">Gestion budgétaire familiale</p>

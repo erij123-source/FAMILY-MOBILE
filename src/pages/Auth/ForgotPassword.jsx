@@ -392,7 +392,7 @@ function ForgotPassword() {
               <div className="logo-wrap">
                 {logoError
                   ? <LogoFallback />
-                  : <img src="/assets/img/family-balance-logo.png" alt="FamilyBalance"
+                  : <img src="/assets/img/app-logo.jpeg" alt="FamilyBalance"
                       onError={() => setLogoError(true)} />
                 }
               </div>

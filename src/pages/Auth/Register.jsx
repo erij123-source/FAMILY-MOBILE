@@ -672,7 +672,7 @@ function Register() {
               <div className="logo-wrap">
                 {logoError
                   ? <LogoFallback />
-                  : <img src="/assets/img/family-balance-logo.png" alt="Family Balance" onError={() => setLogoError(true)} />
+                  : <img src="/assets/img/app-logo.jpeg" alt="Family Balance" onError={() => setLogoError(true)} />
                 }
               </div>
             </div>

@@ -106,7 +106,7 @@ function Navbar() {
 
             {/* ── Logo + tagline dynamique ── */}
             <Link className="navbar-brand" to="/">
-              <img src="/assets/img/family-balance-logo.png" alt="FamilyBalance" />
+              <img src="/assets/img/app-logo.jpeg" alt="FamilyBalance" />
               <div className="lh-20 d-block ms-2">
                 <span className="h4">FamilyBalance</span>
                 <p className="company-tagline mb-0">{pageTagline}</p>
