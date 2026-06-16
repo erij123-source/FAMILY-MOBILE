@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   ResponsiveContainer, PieChart, Pie, Cell, Tooltip
 } from 'recharts';
+import { toggleTheme } from '../../theme/theme';
 
 const API = "http://localhost:8080";
 
@@ -715,7 +716,7 @@ export default function StatsBudget() {
             <div className="ms-auto d-flex align-items-center">
 
               {/* Thème */}
-              <button className="btn btn-link btn-square btn-link-header" id="btn-layout-modes-dark-page" title="Changer le thème">
+              <button className="btn btn-link btn-square btn-link-header" onClick={toggleTheme} title="Changer le thème">
                 <svg className="icon-svg" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="5"/>
                   <line x1="12" y1="1"  x2="12" y2="3"/>

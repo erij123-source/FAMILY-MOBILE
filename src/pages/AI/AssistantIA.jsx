@@ -1,4 +1,8 @@
 import { useState, useRef, useEffect } from "react";
+import { toggleTheme } from "../../theme/theme";
+
+// URL du backend Spring Boot ; l'endpoint /chat relaie vers Gemini cote serveur.
+const API = "http://localhost:8080";
 
 /* ════════════════════════════════════════
    STYLES (injected once)
@@ -305,83 +309,8 @@ const STYLES = `
 `;
 
 /* ════════════════════════════════════════
-   MOCK AI RESPONSES
+   (Les réponses sont fournies par le backend /chat → Gemini)
 ════════════════════════════════════════ */
-const MOCK = {
-  achat: {
-    text: "Voici une analyse de votre capacité d'achat pour ce mois.",
-    sections: [
-      { icon: "🔍", title: "Analyse", body: "Votre solde disponible après les dépenses fixes est de <strong>380 DT</strong>. Vos dépenses variables sont dans la moyenne ce mois-ci." },
-      { icon: "📊", title: "Impact", trend: "up", body: "Un achat supérieur à <strong>300 DT</strong> réduirait votre épargne mensuelle de 40% et pourrait compromettre votre objectif." },
-      { icon: "💡", title: "Recommandation", body: "Vous pouvez effectuer cet achat si son montant est inférieur à <strong>250 DT</strong>. Sinon, envisagez un échelonnement ou reportez au mois prochain." }
-    ]
-  },
-  augmenté: {
-    text: "J'ai analysé l'évolution de vos dépenses sur les 3 derniers mois.",
-    sections: [
-      { icon: "🔍", title: "Analyse", trend: "up", body: "Vos dépenses <strong>alimentaires</strong> ont augmenté de <strong>18%</strong> ce mois-ci, passant de 520 DT à 614 DT." },
-      { icon: "📊", title: "Impact", body: "Cette hausse représente <strong>94 DT supplémentaires</strong>. Combinée à la hausse carburant (+12%), votre reste à vivre a diminué de 12%." },
-      { icon: "💡", title: "Recommandation", body: "Privilégiez les achats en gros pour les produits courants. Une économie de <strong>60 DT</strong> est réalisable dès ce mois." }
-    ],
-    chart: {
-      labels: ["Jan", "Fév", "Mar"],
-      datasets: [
-        { label: "Alimentation", data: [490, 520, 614], borderColor: "#377CF4", backgroundColor: "rgba(55,124,244,0.1)", tension: 0.4, fill: true },
-        { label: "Transport", data: [180, 195, 218], borderColor: "#377CF4", backgroundColor: "rgba(55,124,244,0.1)", tension: 0.4, fill: true }
-      ]
-    }
-  },
-  équilibrer: {
-    text: "Voici mon plan d'équilibrage budgétaire personnalisé pour votre foyer.",
-    sections: [
-      { icon: "🔍", title: "Analyse", body: "Votre budget présente actuellement un <strong>déficit de 145 DT/mois</strong>. Les dépenses discrétionnaires représentent 38% du total." },
-      { icon: "📊", title: "Impact", body: "À ce rythme, votre épargne tampon sera consommée en <strong>4 mois</strong>. Une intervention est recommandée ce mois-ci." },
-      { icon: "💡", title: "Recommandation", body: "Abonnements inutilisés <strong>-40 DT</strong>, courses optimisées <strong>-60 DT</strong>, dépenses optionnelles <strong>-45 DT</strong>. Total récupérable : <strong>145 DT/mois</strong>." }
-    ],
-    simulation: "Simulation : En appliquant ces 3 actions, votre budget sera équilibré en 1 mois et vous générerez une épargne de +85 DT/mois d'ici 3 mois."
-  },
-  prévision: {
-    text: "Voici la prévision de vos dépenses pour avril 2026 basée sur vos tendances récentes.",
-    sections: [
-      { icon: "🔍", title: "Analyse", body: "Dépenses totales prévues pour avril : <strong>2 340 DT</strong> (±5%), basé sur vos 3 derniers mois." },
-      { icon: "📊", title: "Impact", body: "Hausses saisonnières attendues : énergie <strong>+8%</strong>, transport <strong>+5%</strong>. Épargne projetée : 210 DT." },
-      { icon: "💡", title: "Recommandation", body: "Constituez dès maintenant une réserve de <strong>150 DT</strong> pour absorber les hausses prévues sans affecter votre épargne." }
-    ],
-    chart: {
-      labels: ["Jan", "Fév", "Mar", "Avr (Prévu)"],
-      datasets: [
-        { label: "Réel", data: [2100, 2200, 2280, null], borderColor: "#377CF4", backgroundColor: "rgba(55,124,244,0.1)", tension: 0.4, fill: true },
-        { label: "Prévu", data: [null, null, 2280, 2340], borderColor: "#fd7e14", backgroundColor: "rgba(253,126,20,0.08)", borderDash: [6, 3], tension: 0.4, fill: true }
-      ]
-    }
-  },
-  réduire: {
-    text: "J'ai identifié les postes où vous pouvez réaliser des économies significatives.",
-    sections: [
-      { icon: "🔍", title: "Analyse", body: "4 catégories présentent des dépenses supérieures à la moyenne recommandée pour un foyer de votre taille." },
-      { icon: "📊", title: "Impact", trend: "down", body: "Économies potentielles :<br>• Streaming/Abonnements : <strong>-45 DT</strong><br>• Restauration externe : <strong>-80 DT</strong><br>• Achats impulsifs : <strong>-60 DT</strong><br>• Énergie (optimisation) : <strong>-35 DT</strong>" },
-      { icon: "💡", title: "Recommandation", body: "En appliquant ces réductions progressivement : <strong>220 DT/mois</strong> soit <strong>2 640 DT/an</strong> — de quoi financer un projet familial !" }
-    ],
-    simulation: "Simulation : Si vous réduisez vos dépenses de restauration de 50%, votre reste à vivre augmentera de 80 DT/mois, permettant d'atteindre votre objectif d'épargne 2 mois plus tôt."
-  }
-};
-
-function getAI(q) {
-  const lq = q.toLowerCase();
-  if (lq.match(/achat|appareil|acheter/))         return MOCK.achat;
-  if (lq.match(/augment|hausse|pourquoi/))        return MOCK["augmenté"];
-  if (lq.match(/équilibr|balance|comment/))       return MOCK["équilibrer"];
-  if (lq.match(/prévi|prochain|futur|prévision/)) return MOCK["prévision"];
-  if (lq.match(/réduire|économis|où/))            return MOCK["réduire"];
-  return {
-    text: "J'ai analysé votre question en tenant compte de votre profil budgétaire.",
-    sections: [
-      { icon: "🔍", title: "Analyse", body: "Votre budget familial montre une gestion globalement <strong>équilibrée</strong>. Taux d'épargne actuel : 12% (objectif recommandé : 15%)." },
-      { icon: "📊", title: "Impact", body: "Votre situation est <strong>stable</strong>, mais des optimisations sont possibles dans certaines catégories." },
-      { icon: "💡", title: "Recommandation", body: "Identifiez les 2-3 postes prioritaires à optimiser ce mois-ci. Précisez votre question pour une analyse plus ciblée." }
-    ]
-  };
-}
 
 function nowTime() {
   return new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -443,7 +372,7 @@ function AIMessage({ resp, time }) {
       <div className="msg-avatar ai-av">🤖</div>
       <div className="msg-content" style={{ maxWidth: "80%" }}>
         <div className="msg-bubble ai-bubble">
-          <div style={{ marginBottom: resp.sections?.length ? "4px" : "0" }}>{resp.text}</div>
+          <div style={{ marginBottom: resp.sections?.length ? "4px" : "0", whiteSpace: "pre-wrap" }}>{resp.text}</div>
           {(resp.sections || []).map((s, i) => (
             <div className="ai-section" key={i}>
               <div className="ai-section-label">
@@ -510,8 +439,12 @@ export default function AssistantIA() {
   const [convLabel, setConvLabel] = useState("Session actuelle");
   const [conversations, setConversations] = useState([{ id: "conv-0", name: "Session actuelle", active: true }]);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [familleId, setFamilleId] = useState(null);
+  const [membreId, setMembreId] = useState(null);
   const chatAreaRef = useRef(null);
   const textareaRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   // Inject styles once
   useEffect(() => {
@@ -542,6 +475,53 @@ export default function AssistantIA() {
     if (sessionStorage.getItem("statsMenuOpen") === "true") setStatsOpen(true);
   }, []);
 
+  // Restaurer la conversation precedente (persistee) au montage.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("fb_assistant_chat");
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr) && arr.length) {
+          setMessages(arr);
+          setShowWelcome(false);
+        }
+      }
+    } catch (_) { /* ignore */ }
+  }, []);
+
+  // Sauvegarder la conversation a chaque changement.
+  useEffect(() => {
+    try {
+      localStorage.setItem("fb_assistant_chat", JSON.stringify(messages));
+    } catch (_) { /* ignore */ }
+  }, [messages]);
+
+  // Resoudre familleId + membreId une fois (meme flux que les autres pages
+  // mobiles), pour que le chatbot envoie de vrais identifiants au backend.
+  useEffect(() => {
+    (async () => {
+      try {
+        let uname = sessionStorage.getItem("username");
+        if (!uname) {
+          try { uname = JSON.parse(localStorage.getItem("user") || "{}").username; } catch (_) {}
+        }
+        if (!uname) return;
+        const usersRes = await fetch(`${API}/users`);
+        if (!usersRes.ok) return;
+        const users = await usersRes.json();
+        const me = users.find(u => u.username === uname);
+        if (!me || !me.id) return;
+        const mRes = await fetch(`${API}/membres/user/${me.id}`);
+        if (mRes.ok) {
+          const txt = await mRes.text();
+          const membre = txt ? JSON.parse(txt) : null;
+          if (membre && membre.famille && membre.famille.id) setFamilleId(membre.famille.id);
+          if (membre && membre.id) setMembreId(membre.id);
+        }
+      } catch (_) { /* ignore */ }
+    })();
+  }, []);
+
   function scrollChat() {
     setTimeout(() => {
       if (chatAreaRef.current) chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
@@ -551,6 +531,22 @@ export default function AssistantIA() {
   function sendMessage() {
     const txt = inputVal.trim();
     if (!txt) return;
+
+    // Prior turns (state before this message is appended) for conversation memory.
+    const history = messages
+      .map(m => ({
+        role: m.type === "user" ? "user" : "bot",
+        text: m.type === "user" ? m.text : (m.resp && m.resp.text ? m.resp.text : ""),
+      }))
+      .filter(h => h.text);
+
+    // familleId/membreId sont resolus au montage (voir useEffect). On envoie
+    // aussi le username : le backend resout username -> famille -> compte si besoin.
+    let username = sessionStorage.getItem("username") || null;
+    if (!username) {
+      try { username = JSON.parse(localStorage.getItem("user") || "{}").username || null; } catch (_) {}
+    }
+    console.log("[chat] envoi:", { familleId, membreId, username });
 
     setShowWelcome(false);
     const time = nowTime();
@@ -571,13 +567,30 @@ export default function AssistantIA() {
     setIsTyping(true);
     scrollChat();
 
-    const delay = 1100 + Math.random() * 700;
-    setTimeout(() => {
-      setIsTyping(false);
-      const resp = getAI(txt);
-      setMessages(prev => [...prev, { type: "ai", resp, time: nowTime() }]);
-      scrollChat();
-    }, delay);
+    const token = localStorage.getItem("token");
+    fetch(`${API}/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ message: txt, history, familleId, membreId, username }),
+    })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+      .then(data => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, { type: "ai", resp: { text: data.reply }, time: nowTime() }]);
+        scrollChat();
+      })
+      .catch(() => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, {
+          type: "ai",
+          resp: { text: "Désolé, une erreur est survenue. Réessayez dans un instant." },
+          time: nowTime(),
+        }]);
+        scrollChat();
+      });
   }
 
   function handleKey(e) {
@@ -587,6 +600,58 @@ export default function AssistantIA() {
   function autoGrow(el) {
     el.style.height = "auto";
     el.style.height = Math.min(el.scrollHeight, 90) + "px";
+  }
+
+  // Petit helper : afficher un message du bot.
+  const botSay = (text) => {
+    setMessages(prev => [...prev, { type: "ai", resp: { text }, time: nowTime() }]);
+    scrollChat();
+  };
+
+  // Dictée vocale (Web Speech API, si supportée par le navigateur/webview).
+  function toggleMic() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      botSay("🎤 La reconnaissance vocale n'est pas supportée ici (sur mobile natif, un plugin Capacitor est requis). Tapez votre message.");
+      return;
+    }
+    if (isRecording) {
+      try { if (recognitionRef.current) recognitionRef.current.stop(); } catch (_) {}
+      setIsRecording(false);
+      return;
+    }
+    const rec = new SR();
+    recognitionRef.current = rec;
+    rec.lang = "fr-FR";
+    rec.continuous = true; // reste actif jusqu'au clic d'arrêt
+    rec.interimResults = true;
+    let finalText = "";
+    rec.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalText += t + " ";
+        else interim += t;
+      }
+      setInputVal((finalText + interim).trim());
+    };
+    rec.onerror = (e) => {
+      setIsRecording(false);
+      const code = e && e.error ? e.error : "inconnue";
+      botSay(
+        (code === "not-allowed" || code === "service-not-allowed")
+          ? "🎤 Accès au micro refusé. Autorisez le microphone (et ouvrez l'app via http://localhost ou en https)."
+          : "🎤 Erreur micro : " + code + ". Réessayez ou tapez votre message."
+      );
+    };
+    rec.onend = () => setIsRecording(false);
+    try {
+      setIsRecording(true);
+      rec.start();
+    } catch (_) {
+      setIsRecording(false);
+      botSay("🎤 Impossible de démarrer le micro. Réessayez.");
+    }
   }
 
   function newConversation() {
@@ -683,7 +748,7 @@ export default function AssistantIA() {
             <div className="ms-auto d-flex align-items-center">
 
               {/* Soleil */}
-              <button className="btn btn-link btn-square btn-link-header" id="btn-layout-modes-dark-page" title="Changer le thème">
+              <button className="btn btn-link btn-square btn-link-header" onClick={toggleTheme} title="Changer le thème">
                 <svg className="icon-svg" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="5"/>
                   <line x1="12" y1="1"  x2="12" y2="3"/>
@@ -878,8 +943,13 @@ export default function AssistantIA() {
                 {/* Input Bar */}
                 <div className="mt-3">
                   <div className="chat-input-wrap">
-                    <button className="btn-inp btn-mic" title="Microphone (simulé)">
-                      <i className="bi bi-mic"></i>
+                    <button
+                      className="btn-inp btn-mic"
+                      onClick={toggleMic}
+                      title={isRecording ? "Arrêter le micro" : "Microphone"}
+                      style={isRecording ? { background: "#fdecea", color: "#dc3545" } : undefined}
+                    >
+                      <i className={isRecording ? "bi bi-mic-fill" : "bi bi-mic"}></i>
                     </button>
                     <textarea
                       ref={textareaRef}

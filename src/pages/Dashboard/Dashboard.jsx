@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { applyTheme, isDarkTheme } from "../../theme/theme";
 
 const API = "http://localhost:8080";
 
@@ -996,23 +997,10 @@ function BudgetStatsBar({ budgetDistribue, budgetRestant, totalRevenu }) {
 // ─── Composant principal ────────────────────────────────────────────────────
 export default function Dashboard() {
   const [statsOpen,    setStatsOpen]    = useState(false);
-  const [isDark,       setIsDark]       = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
+  const [isDark,       setIsDark]       = useState(() => isDarkTheme());
 
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.setAttribute("data-bs-theme", "dark");
-      root.classList.add("dark-mode");
-      root.classList.remove("light-mode");
-    } else {
-      root.setAttribute("data-bs-theme", "light");
-      root.classList.remove("dark-mode");
-      root.classList.add("light-mode");
-    }
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-  }, [isDark]);
+  // Source de vérité unique partagée avec les autres pages (src/theme/theme.js)
+  useEffect(() => { applyTheme(isDark); }, [isDark]);
 
   const [familleNom,   setFamilleNom]   = useState("...");
   const [totalRevenus, setTotalRevenus] = useState(null);
@@ -1463,15 +1451,17 @@ export default function Dashboard() {
   }, [fetchDashboard]);
 
   useEffect(() => {
-    // Pourcentage d'utilisation du **budget gestionnaire uniquement**
-    // (cohérent avec l'affichage "X / budget DT" dans la barre — le report
-    // est volontairement exclu du dénominateur, identique à la page Home web).
+    // Pourcentage d'utilisation du budget total (base + report), identique
+    // à la page Home web : dépenses / (budget de base + report). Le report
+    // est inclus dans le dénominateur et la valeur est arrondie à 1 décimale
+    // comme côté web (Math.round(pct*10)/10) pour un affichage cohérent.
     const _budget = budget ?? 0;
     const _carry  = carryoverDash ?? 0;
-    if (_budget > 0 && resteAVivre !== null) {
-      const _depenses = Math.max(0, (_budget + _carry) - resteAVivre);
-      const pct = Math.min(100, Math.max(0, (_depenses / _budget) * 100));
-      setPctBudget(pct);
+    const _total  = _budget + _carry;
+    if (_total > 0 && resteAVivre !== null) {
+      const _depenses = Math.max(0, _total - resteAVivre);
+      const pct = (_depenses / _total) * 100;
+      setPctBudget(Math.min(100, Math.max(0, Math.round(pct * 10) / 10)));
     } else {
       setPctBudget(0);
     }

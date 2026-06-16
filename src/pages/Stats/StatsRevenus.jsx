@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, ReferenceLine } from "recharts";
+import { toggleTheme } from "../../theme/theme";
 
 const API_BASE = "http://localhost:8080";
 const MONTHS_FR = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -520,20 +521,13 @@ export default function StatsRevenus() {
       return (mm - 1) === catFilterMonth && yyyy === catFilterYear;
     });
 
-    // Agréger par type de revenu (comme mapRevenu dans RevenusListe)
-    // type AUTRE + description non vide → afficher la description (label custom)
-    // sinon afficher le label standard
-    const TYPE_LABEL_CAT = { SALAIRE: 'Salaire', SECONDAIRE: 'Revenu secondaire', AIDE: 'Aide / Subvention', AUTRE: 'Autre' };
+    // Agréger par CATÉGORIE réelle du revenu (categorieName) — pas par `type`.
+    // Le champ `type` est null pour la plupart des revenus, ce qui faisait
+    // tomber toute la répartition dans une seule part "Autre" alors que les
+    // revenus ont bien des catégories (Revenu secondaire, Aide, location…).
     const bycat = {};
     filtered.forEach(r => {
-      const typeRaw = (r.type ?? '').toUpperCase();
-      let key;
-      if (typeRaw === 'AUTRE') {
-        const desc = (r.description ?? '').trim();
-        key = desc || 'Autre';
-      } else {
-        key = TYPE_LABEL_CAT[typeRaw] || r.type || 'Autre';
-      }
+      const key = (r.categorieName || r.categorieNom || '').trim() || 'Sans catégorie';
       bycat[key] = (bycat[key] || 0) + Number(r.amount ?? 0);
     });
 
@@ -651,7 +645,7 @@ export default function StatsRevenus() {
             <div className="ms-auto d-flex align-items-center">
 
               {/* Thème */}
-              <button className="btn btn-link btn-square btn-link-header" id="btn-layout-modes-dark-page" title="Changer le thème">
+              <button className="btn btn-link btn-square btn-link-header" onClick={toggleTheme} title="Changer le thème">
                 <svg className="icon-svg" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="5"/>
                   <line x1="12" y1="1"  x2="12" y2="3"/>

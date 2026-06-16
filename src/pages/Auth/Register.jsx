@@ -597,6 +597,10 @@ function Register() {
         .field-input.is-invalid{border-color:var(--danger);box-shadow:0 0 0 4px rgba(220,38,38,.09)}
         .eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:4px;display:flex;align-items:center;transition:color .2s}
         .eye-btn:hover{color:var(--blue)}
+        /* Masquer l'œil/croix natif du navigateur (Edge/Chromium) pour ne garder
+           que notre bouton .eye-btn — sinon deux icônes apparaissent. */
+        .field-input::-ms-reveal,
+        .field-input::-ms-clear{display:none}
         .field-error{font-size:.74rem;color:var(--danger);margin-top:5px}
         .phone-verify-row{display:flex;gap:8px;align-items:flex-end}
         .phone-input-group{display:flex;align-items:stretch;border:1.5px solid rgba(55,124,244,.15);border-radius:var(--radius-input);background:rgba(241,245,255,.72);overflow:hidden;transition:border-color .25s,box-shadow .25s;flex:1}

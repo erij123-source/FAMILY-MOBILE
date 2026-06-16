@@ -25,7 +25,21 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>FamilyBalance</title>
-    
+
+    <!-- Applique le thème sauvegardé AVANT le rendu React : évite le flash de
+         thème clair et garantit que le mode sombre persiste sur TOUTES les
+         pages, y compris lors d'une navigation par rechargement complet. -->
+    <script>
+      (function () {
+        try {
+          var dark = localStorage.getItem('theme') === 'dark';
+          var r = document.documentElement;
+          r.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+          r.classList.add(dark ? 'dark-mode' : 'light-mode');
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Fonts Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>

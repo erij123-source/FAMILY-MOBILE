@@ -5,6 +5,7 @@ import {
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
   ReferenceLine
 } from 'recharts';
+import { toggleTheme } from '../../theme/theme';
 
 /* ════════════════════════════════════════════
    STYLES — injectés une seule fois (pattern AssistantIA)
@@ -660,7 +661,7 @@ export default function StatsCharges() {
             </a>
 
             <div className="ms-auto d-flex align-items-center">
-              <button className="btn btn-link btn-square btn-link-header" id="btn-layout-modes-dark-page" title="Changer le thème">
+              <button className="btn btn-link btn-square btn-link-header" onClick={toggleTheme} title="Changer le thème">
                 <svg className="icon-svg" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="5"/>
                   <line x1="12" y1="1"  x2="12" y2="3"/>

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { toggleTheme } from '../../theme/theme';
 
 /* Pages qui affichent la flèche ← retour au lieu du menu sidebar */
 const INNER_PAGES = ['/revenus', '/charges', '/factures', '/notifications', '/profil', '/stats', '/chat'];
@@ -119,7 +120,7 @@ function Navbar() {
               {/* Soleil / thème */}
               <button
                 className="btn btn-link btn-square btn-link-header"
-                id="btn-layout-modes-dark-page"
+                onClick={toggleTheme}
                 title="Changer le thème"
               >
                 <svg className="icon-svg" viewBox="0 0 24 24">

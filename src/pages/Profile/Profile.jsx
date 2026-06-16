@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { toggleTheme } from '../../theme/theme';
 
 const API = 'http://localhost:8080';
 
@@ -827,7 +828,7 @@ function Profile() {
             <div className="ms-auto d-flex align-items-center">
 
               {/* Soleil / Thème */}
-              <button className="btn btn-link btn-square btn-link-header" id="btn-layout-modes-dark-page" title="Changer le thème">
+              <button className="btn btn-link btn-square btn-link-header" onClick={toggleTheme} title="Changer le thème">
                 <svg className="icon-svg" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="5"/>
                   <line x1="12" y1="1"  x2="12" y2="3"/>
@@ -1070,7 +1071,7 @@ function Profile() {
                       <div style={{ marginBottom:8 }}>
                         <label className="fl">Code OTP *</label>
                         <div style={{ display:'flex', gap:8 }}>
-                          <input className="fi" type="text" placeholder="6 chiffres" maxLength={6} value={otpInput}
+                          <input className="fi" type="text" inputMode="numeric" placeholder="4 chiffres" maxLength={4} value={otpInput}
                             style={{ flex:1, marginBottom:0 }}
                             onChange={e => setOtpInput(e.target.value.replace(/\D/g,''))} />
                           <button onClick={verifyOtp}

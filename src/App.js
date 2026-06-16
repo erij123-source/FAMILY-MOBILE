@@ -35,6 +35,7 @@ function App() {
         <Route path="/charges"  element={<PrivateRoute><ChargeListe /></PrivateRoute>} />
         <Route path="/factures" element={<PrivateRoute><Factures /></PrivateRoute>} />
         <Route path="/chat"     element={<PrivateRoute><AssistantIA /></PrivateRoute>} />
+        <Route path="/assistant" element={<PrivateRoute><AssistantIA /></PrivateRoute>} />
         <Route path="/profile"  element={<PrivateRoute><Profile /></PrivateRoute>} />
         <Route path="/profile/edit" element={<PrivateRoute><EditProfile /></PrivateRoute>} />
         <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />

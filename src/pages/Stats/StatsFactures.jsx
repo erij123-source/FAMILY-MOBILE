@@ -5,6 +5,7 @@ import {
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
   ReferenceLine
 } from 'recharts';
+import { toggleTheme } from '../../theme/theme';
 
 /* ════════════════════════════════════════════
    STYLES — injectés une seule fois (pattern AssistantIA)
@@ -352,7 +353,10 @@ function buildEvolutionDataForYear(factures, year, endMonthIndex, count) {
     const byMonth = {};
     factures.forEach(f => {
         if (f.statut !== 'PAYEE') return;
-        const dateStr = f.dueDate;
+        // Use the issue date (always set) as the facture's reference date —
+        // dueDate is optional and is null for most factures, which would
+        // otherwise drop them from every chart.
+        const dateStr = f.issueDate || f.dueDate;
         if (!dateStr) return;
         const [yyyy, mm] = dateStr.split('-').map(Number);
         if (yyyy !== year) return;
@@ -553,8 +557,9 @@ export default function StatsFactures() {
                 const byMember = {};
                 flat.forEach(f => {
                     if (f.statut !== 'PAYEE') return;
-                    if (!f.dueDate) return;
-                    const [yyyy, mm] = f.dueDate.split('-').map(Number);
+                    const dateStr = f.issueDate || f.dueDate;
+                    if (!dateStr) return;
+                    const [yyyy, mm] = dateStr.split('-').map(Number);
                     if ((mm - 1) !== selMonth || yyyy !== selYear) return;
                     const memberId = f.membre?.id;
                     if (!memberId) return;
@@ -621,9 +626,12 @@ export default function StatsFactures() {
                 const byCategory = {};
                 facData.forEach(f => {
                     if (f.statut !== 'PAYEE') return;
-                    if (!f.dueDate) return;
+                    // Issue date is always present; dueDate is optional (null for
+                    // most factures) so filtering on it hid them from the chart.
+                    const dateStr = f.issueDate || f.dueDate;
+                    if (!dateStr) return;
                     // parse "YYYY-MM-DD" en local (même logique que Factures.jsx)
-                    const [yyyy, mm] = f.dueDate.slice(0, 10).split('-').map(Number);
+                    const [yyyy, mm] = dateStr.slice(0, 10).split('-').map(Number);
                     if ((mm - 1) !== selMonth || yyyy !== selYear) return;
 
                     // résoudre le nom de catégorie
@@ -664,11 +672,13 @@ export default function StatsFactures() {
         const yrs = new Set();
         // Source 1 : toutes les factures brutes du compte (la plus complète)
         allFacturesRaw.forEach(f => {
-            if (f.dueDate) yrs.add(Number(f.dueDate.slice(0, 4)));
+            const d = f.issueDate || f.dueDate;
+            if (d) yrs.add(Number(d.slice(0, 4)));
         });
         // Source 2 : factures plate du chart évolution (fallback si allFacturesRaw pas encore chargé)
         allFactures.forEach(f => {
-            if (f.dueDate) yrs.add(Number(f.dueDate.split('-')[0]));
+            const d = f.issueDate || f.dueDate;
+            if (d) yrs.add(Number(d.split('-')[0]));
         });
         // Toujours inclure l'année courante pour ne jamais avoir une liste vide
         yrs.add(new Date().getFullYear());
@@ -773,7 +783,7 @@ export default function StatsFactures() {
                         <div className="ms-auto d-flex align-items-center">
 
                             {/* Thème */}
-                            <button className="btn btn-link btn-square btn-link-header" id="btn-layout-modes-dark-page" title="Changer le thème">
+                            <button className="btn btn-link btn-square btn-link-header" onClick={toggleTheme} title="Changer le thème">
                                 <svg className="icon-svg" viewBox="0 0 24 24">
                                     <circle cx="12" cy="12" r="5"/>
                                     <line x1="12" y1="1"  x2="12" y2="3"/>
